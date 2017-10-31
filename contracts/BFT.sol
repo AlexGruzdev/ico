@@ -1,13 +1,14 @@
 pragma solidity ^0.4.11;
-import "zeppelin-solidity/contracts/token/MintableToken.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract BFT is MintableToken {
+contract BFT is Ownable {
     string public name = "Bonum Financial Token";
     string public symbol = "BFT";
     uint public decimals = 18;
+    uint public constant INITIAL_SUPPLY = 75000000 * 1 ether;
 
-    function BFT(uint256 _amount){
-        owner = msg.sender;
-        mint(owner, _amount);
+    function BFT(){
+        totalSupply = INITIAL_SUPPLY;
+        balances[msg.sender] = INITIAL_SUPPLY;
     }
 }

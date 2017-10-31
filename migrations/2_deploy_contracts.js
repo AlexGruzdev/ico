@@ -1,12 +1,10 @@
-var ConvertLib = artifacts.require("./ConvertLib.sol");
-var MetaCoin = artifacts.require("./MetaCoin.sol");
-var BFT = artifacts.require("./BFT.sol");
+const BFTCrowdsale = artifacts.require("./BFTCrowdsale.sol");
 
-module.exports = function(deployer) {
-  deployer.deploy(ConvertLib);
-  deployer.link(ConvertLib, MetaCoin);
-  deployer.deploy(MetaCoin);
+module.exports = function(deployer, network, accounts) {
+    const startTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 1;
+    const endTime = startTime + (86400 * 20);
+    const rate = new web3.BigNumber(1000);
+    const wallet = accounts[0];
 
-    const tokenAmount = 75000000;
-    deployer.deploy(BFT, tokenAmount);
+    deployer.deploy(BFTCrowdsale, startTime, endTime, rate, wallet)
 };
