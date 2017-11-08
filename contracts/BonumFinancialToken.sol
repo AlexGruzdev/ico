@@ -1,9 +1,8 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.17;
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./Burnable.sol";
 
 contract BonumFinancialToken is Burnable, Ownable{
-    using SafeMath for uint;
-
     string public name = "Bonum Financial Token";
     string public symbol = "BFT";
     uint public decimals = 18;

@@ -1,8 +1,8 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.17;
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Investors is Ownable {
-    struct Investor {
+   /** struct Investor {
 
     }
 
@@ -11,8 +11,9 @@ contract Investors is Ownable {
     function Investors(){
     }
 
+    //stub
     function addInvestor(address investor) external onlyOwner {
-        require(investor != 0x0 && !investorWhiteList[investor]);
+        require(investor != 0x0);
         investorsList[investor]= Investor();
-    }
+    }*/
 }
