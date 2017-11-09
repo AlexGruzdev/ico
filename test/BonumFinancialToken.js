@@ -4,6 +4,7 @@ require('chai').use(require('chai-as-promised')).should();
 
 
 contract('BonumFinancialToken', function(accounts) {
+
     it("should create 75000000 BFT", async function () {
         const instance = await BonumFinancialToken.new();
         const supply = await instance.totalSupply();
@@ -28,7 +29,7 @@ contract('BonumFinancialToken', function(accounts) {
         );
     });
 
-    it("shouldn't allow to set releaseAgent by owner when token is released", async function () {
+    it("shouldn't allow to set releaseAgent by owner when token is in the release state", async function () {
         const instance = await BonumFinancialToken.new();
         await instance.setReleaseAgent(accounts[0]);
         await instance.releaseTokens();
@@ -41,4 +42,31 @@ contract('BonumFinancialToken', function(accounts) {
             }
         );
     });
+
+    it("should allow to set releaseAgent by owner", async function () {
+        const instance = await BonumFinancialToken.new();
+        await instance.setReleaseAgent(accounts[1]);
+        const releaseAgent = await instance.releaseAgent();
+        assert.equal(releaseAgent, accounts[1])
+    });
+
+    it("should allow to set transferAgents by owner", async function () {
+        const instance = await BonumFinancialToken.new();
+        await instance.setTransferAgent(accounts[1], true);
+        const value = await instance.transferAgents(accounts[1]);
+        assert.equal(value, true)
+    });
+
+    it("shouldn't allow to set transferAngents by not an owner", async function(){
+        const instance = await BonumFinancialToken.new();
+        instance.setTransferAgent(accounts[1], true, {from: accounts[1]}).then(
+            function () {
+                assert.fail();
+            },
+            function (err) {
+                err.message.should.includes("VM Exception while processing transaction: revert");
+            }
+        );
+    });
+
 });
