@@ -5,7 +5,7 @@ require('chai').use(require('chai-as-promised')).should();
 
 contract('BonumFinancialToken', function (accounts) {
 
-    describe('Initialisation test', function () {
+    describe('initialisation test', function () {
         it("should create 75000000 BFT", async () => {
             const instance = await BonumFinancialToken.new();
 
@@ -207,6 +207,18 @@ contract('BonumFinancialToken', function (accounts) {
 
             const balance2 = await instance.balanceOf(accounts[1]);
             assert.equal(balance2.valueOf(), 0);
+        });
+
+        it("shouldn't allow transferFrom when token is released and isn't approved", async function() {
+            let instance = await BonumFinancialToken.new();
+            await instance.setReleaseAgent(accounts[0]);
+            await instance.releaseTokens();
+            instance.transferFrom(accounts[0], accounts[2], 100 * 10 ** 18, {from: accounts[1]}).then(
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: invalid opcode")
+            );
+
+
         });
 
         it("should allow transferFrom for transferAgent when token is not released", async function() {
