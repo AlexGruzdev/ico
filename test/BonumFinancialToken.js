@@ -23,20 +23,14 @@ contract('BonumFinancialToken', function (accounts) {
 
     describe('setReleaseAgent', function () {
         it("shouldn't give an opportunity to call setReleaseAgent for another persons", async () => {
-            instance.setReleaseAgent(accounts[1], {from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.setReleaseAgent(accounts[1], {from: accounts[1]}).should.be.rejectedWith('revert');
         });
 
 
         it("shouldn't allow to set releaseAgent by owner when token is in the release state", async () => {
             await instance.setReleaseAgent(accounts[0]);
             await instance.releaseTokens();
-            instance.setReleaseAgent(accounts[1], {from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            instance.setReleaseAgent(accounts[1], {from: accounts[1]}).should.be.rejectedWith('revert');
         });
 
         it("should allow to set releaseAgent by owner", async () => {
@@ -54,30 +48,20 @@ contract('BonumFinancialToken', function (accounts) {
         });
 
         it("shouldn't allow to set transferAgents by not an owner", async () => {
-            instance.setTransferAgent(accounts[1], true, {from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.setTransferAgent(accounts[1], true, {from: accounts[1]}).should.be.rejectedWith('revert');
         });
 
         it("shouldn't allow to set transferAgents in releaseState by owner", async () => {
             await instance.setReleaseAgent(accounts[0]);
             instance.releaseTokens();
-
-            instance.setTransferAgent(accounts[1], true).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.setTransferAgent(accounts[1], true).should.be.rejectedWith('revert');
         });
     });
 
     describe('release', function () {
         it("shouldn't allow to release by not release agent", async () => {
             await instance.setReleaseAgent(accounts[0]);
-            instance.releaseTokens({from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.releaseTokens({from: accounts[1]}).should.be.rejectedWith('revert');
         });
 
         it("should allow to release by release agent", async () => {
@@ -90,20 +74,14 @@ contract('BonumFinancialToken', function (accounts) {
         it("should't release if released", async () => {
             await instance.setReleaseAgent(accounts[1]);
             await instance.releaseTokens({from: accounts[1]});
-            instance.releaseTokens({from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.releaseTokens({from: accounts[1]}).should.be.rejectedWith('revert');
         });
     });
 
     describe('transfer', async () => {
 
         it("should't transfer, when not in transfer list and not released", async () => {
-            instance.transfer(accounts[1], 100).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.transfer(accounts[1], 100).should.be.rejectedWith('revert');
         });
 
         it("allow transfer, when released", async () => {
@@ -152,27 +130,18 @@ contract('BonumFinancialToken', function (accounts) {
 
         it("should not allow transfer to 0x0", async function() {
             await instance.setTransferAgent(accounts[0], true);
-            instance.transfer(0x0, 100 * 10 ** 18).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.transfer(0x0, 100 * 10 ** 18).should.be.rejectedWith('revert');
         });
 
         it("should not allow transfer from to 0x0", async function() {
             await instance.setTransferAgent(accounts[0], true);
             await instance.approve(accounts[1], 100 * 10 ** 18);
-            instance.transferFrom(accounts[0], 0x0, 100 * 10 ** 18, {from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.transferFrom(accounts[0], 0x0, 100 * 10 ** 18, {from: accounts[1]}).should.be.rejectedWith('revert');
         });
 
         it("should not allow transferFrom when token is not released and 'from' is not added to transferAgents map", async function() {
             await instance.approve(accounts[1], 100 * 10 ** 18);
-            instance.transferFrom(accounts[0], accounts[2], 100 * 10 ** 18, {from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.transferFrom(accounts[0], accounts[2], 100 * 10 ** 18, {from: accounts[1]}).should.be.rejectedWith('revert');
         });
 
         it("should allow transferFrom when token is released", async function() {
@@ -195,12 +164,7 @@ contract('BonumFinancialToken', function (accounts) {
         it("shouldn't allow transferFrom when token is released and isn't approved", async function() {
             await instance.setReleaseAgent(accounts[0]);
             await instance.releaseTokens();
-            instance.transferFrom(accounts[0], accounts[2], 100 * 10 ** 18, {from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: invalid opcode")
-            );
-
-
+            await instance.transferFrom(accounts[0], accounts[2], 100 * 10 ** 18, {from: accounts[1]}).should.be.rejectedWith('opcode');
         });
 
         it("should allow transferFrom for transferAgent when token is not released", async function() {
@@ -235,17 +199,11 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.setTransferAgent(accounts[0], true);
             await instance.transfer(accounts[1], 1000000 * 10 ** 18);
 
-            instance.burn(1000000 * 10 ** 18, {from: accounts[1]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.burn(1000000 * 10 ** 18, {from: accounts[1]}).should.be.rejectedWith('revert');
         });
 
         it("should not allow to burn more than balance", async function() {
-            instance.burn(75000001 * 10 ** 18).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.burn(75000001 * 10 ** 18).should.be.rejectedWith('revert');
         });
 
         it("should allow to burn from by owner", async function() {
@@ -261,10 +219,7 @@ contract('BonumFinancialToken', function (accounts) {
             assert.equal(supply, 74500000 * 10 ** 18);
 
             //should not allow to burn more
-            instance.burnFrom(accounts[1], 1).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.burnFrom(accounts[1], 1).should.be.rejectedWith('revert');
         });
 
         it("should not allow to burn from by not owner", async function() {
@@ -272,10 +227,7 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.transfer(accounts[1], 1000000 * 10 ** 18);
             await instance.approve(accounts[2], 500000 * 10 ** 18, {from: accounts[1]});
 
-            instance.burnFrom(accounts[1], 500000 * 10 ** 18, {from: accounts[2]}).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.burnFrom(accounts[1], 500000 * 10 ** 18, {from: accounts[2]}).should.be.rejectedWith('revert');
         });
 
         it("should not allow to burn from more than balance", async function() {
@@ -283,10 +235,7 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.transfer(accounts[1], 500000 * 10 ** 18);
             await instance.approve(accounts[0], 1000000 * 10 ** 18, {from: accounts[1]});
 
-            instance.burnFrom(accounts[1], 500001 * 10 ** 18).then(
-                () => assert.fail(),
-                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
-            );
+            await instance.burnFrom(accounts[1], 500001 * 10 ** 18).should.be.rejectedWith('revert');
         });
     });
 });
