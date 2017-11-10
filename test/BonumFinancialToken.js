@@ -5,7 +5,6 @@ require('chai').use(require('chai-as-promised')).should();
 
 contract('BonumFinancialToken', function (accounts) {
 
-
     describe('Initialisation test', function () {
         it("should create 75000000 BFT", async () => {
             const instance = await BonumFinancialToken.new();
@@ -26,12 +25,8 @@ contract('BonumFinancialToken', function (accounts) {
         it("shouldn't give an opportunity to call setReleaseAgent for another persons", async () => {
             const instance = await BonumFinancialToken.new();
             instance.setReleaseAgent(accounts[1], {from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -41,12 +36,8 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.setReleaseAgent(accounts[0]);
             await instance.releaseTokens();
             instance.setReleaseAgent(accounts[1], {from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -69,12 +60,8 @@ contract('BonumFinancialToken', function (accounts) {
         it("shouldn't allow to set transferAgents by not an owner", async () => {
             const instance = await BonumFinancialToken.new();
             instance.setTransferAgent(accounts[1], true, {from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -84,12 +71,8 @@ contract('BonumFinancialToken', function (accounts) {
             instance.releaseTokens();
 
             instance.setTransferAgent(accounts[1], true).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
     });
@@ -99,12 +82,8 @@ contract('BonumFinancialToken', function (accounts) {
             const instance = await BonumFinancialToken.new();
             await instance.setReleaseAgent(accounts[0]);
             instance.releaseTokens({from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -121,12 +100,8 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.setReleaseAgent(accounts[1]);
             await instance.releaseTokens({from: accounts[1]});
             instance.releaseTokens({from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
     });
@@ -136,12 +111,8 @@ contract('BonumFinancialToken', function (accounts) {
         it("should't transfer, when not in transfer list and not released", async () => {
             const instance = await BonumFinancialToken.new();
             instance.transfer(accounts[1], 100).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -196,12 +167,8 @@ contract('BonumFinancialToken', function (accounts) {
             let instance = await BonumFinancialToken.new();
             await instance.setTransferAgent(accounts[0], true);
             instance.transfer(0x0, 100 * 10 ** 18).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -210,12 +177,8 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.setTransferAgent(accounts[0], true);
             await instance.approve(accounts[1], 100 * 10 ** 18);
             instance.transferFrom(accounts[0], 0x0, 100 * 10 ** 18, {from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -223,12 +186,8 @@ contract('BonumFinancialToken', function (accounts) {
             let instance = await BonumFinancialToken.new();
             await instance.approve(accounts[1], 100 * 10 ** 18);
             instance.transferFrom(accounts[0], accounts[2], 100 * 10 ** 18, {from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -286,24 +245,16 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.transfer(accounts[1], 1000000 * 10 ** 18);
 
             instance.burn(1000000 * 10 ** 18, {from: accounts[1]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
         it("should not allow to burn more than balance", async function() {
             let instance = await BonumFinancialToken.new();
             instance.burn(75000001 * 10 ** 18).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -322,12 +273,8 @@ contract('BonumFinancialToken', function (accounts) {
 
             //should not allow to burn more
             instance.burnFrom(accounts[1], 1).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -338,12 +285,8 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.approve(accounts[2], 500000 * 10 ** 18, {from: accounts[1]});
 
             instance.burnFrom(accounts[1], 500000 * 10 ** 18, {from: accounts[2]}).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
 
@@ -354,12 +297,8 @@ contract('BonumFinancialToken', function (accounts) {
             await instance.approve(accounts[0], 1000000 * 10 ** 18, {from: accounts[1]});
 
             instance.burnFrom(accounts[1], 500001 * 10 ** 18).then(
-                function () {
-                    assert.fail();
-                },
-                function (err) {
-                    err.message.should.includes("VM Exception while processing transaction: revert");
-                }
+                () => assert.fail(),
+                (err) => err.message.should.includes("VM Exception while processing transaction: revert")
             );
         });
     });
