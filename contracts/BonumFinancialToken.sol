@@ -69,7 +69,7 @@ contract BonumFinancialToken is Burnable, Ownable{
      * Can be called only from the release agent that is the final ICO contract.
      * It is only called if the crowdsale has been success (first milestone reached).
      */
-    function releaseTokens() public onlyReleaseAgent {
+    function releaseTokens() public onlyReleaseAgent inReleaseState(false) {
         released = true;
     }
 
