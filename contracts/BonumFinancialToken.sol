@@ -1,11 +1,17 @@
 pragma solidity ^0.4.17;
+
+
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Burnable.sol";
 
-contract BonumFinancialToken is Burnable, Ownable{
+
+contract BonumFinancialToken is Burnable, Ownable {
     string public name = "Bonum Financial Token";
+
     string public symbol = "BFT";
+
     uint public decimals = 18;
+
     uint public constant INITIAL_SUPPLY = 75000000 * 1 ether;
 
     /*
@@ -37,8 +43,8 @@ contract BonumFinancialToken is Burnable, Ownable{
      *
      */
     modifier canTransfer(address _sender) {
-        if(!released) {
-            if(!transferAgents[_sender]) {
+        if (!released) {
+            if (!transferAgents[_sender]) {
                 throw;
             }
         }
@@ -75,7 +81,7 @@ contract BonumFinancialToken is Burnable, Ownable{
 
     /** The function can be called only before or after the tokens have been releasesd */
     modifier inReleaseState(bool releaseState) {
-        if(releaseState != released) {
+        if (releaseState != released) {
             throw;
         }
         _;
@@ -83,7 +89,7 @@ contract BonumFinancialToken is Burnable, Ownable{
 
     /** The function can be called only by a whitelisted release agent. */
     modifier onlyReleaseAgent() {
-        if(msg.sender != releaseAgent) {
+        if (msg.sender != releaseAgent) {
             throw;
         }
         _;
