@@ -24,12 +24,12 @@ contract Investors is Ownable {
         investors[investor].isVerified = true;
     }
 
-    function removeInvestorFromPreWhiteList(address investor) external onlyOwner {
+    function removeInvestor(address investor) external onlyOwner {
         require(investor != 0x0 && investors[investor].isVerified);
         investors[investor].isVerified = false;
     }
 
-    function getIsVerified(address investor) constant external returns (address result){
+    function getIsVerified(address investor) constant external returns (bool result){
         return investors[investor].isVerified;
     }
 
@@ -39,7 +39,7 @@ contract Investors is Ownable {
         investors[investor].isInWhiteList = result;
     }
 
-    function getIsInWhiteList(address investor) constant external returns (address result){
+    function getIsInWhiteList(address investor) constant external returns (bool result){
         return investors[investor].isInWhiteList;
     }
 
@@ -48,7 +48,7 @@ contract Investors is Ownable {
         investors[investor].isInPreWhiteList = result;
     }
 
-    function getIsInPreWhiteList(address investor) constant external returns (address result){
+    function getIsInPreWhiteList(address investor) constant external returns (bool result){
         return investors[investor].isInPreWhiteList;
     }
 }

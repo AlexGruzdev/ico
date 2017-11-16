@@ -33,7 +33,7 @@ contract BonumFinancialTokenPreSale is Haltable {
         start = _start;
         duration = _duration;
 
-        token = _token;
+        token = BonumFinancialToken(_token);
         investors = Investors(_investors);
         wallets = _wallets;
     }
