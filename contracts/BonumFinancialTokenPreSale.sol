@@ -4,7 +4,7 @@ pragma solidity ^0.4.17;
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BonumFinancialToken.sol";
-import "./Burnable.sol";
+import "./Haltable.sol";
 import "./Investors.sol";
 import "./rates/PriceReceiver.sol";
 
@@ -47,7 +47,7 @@ contract BonumFinancialTokenPreSale is Haltable, PriceReceiver {
 
     function receiveEurPrice(uint eurUsdPrice) external onlyEurUsdRateProvider{
         require(eurUsdPrice > 0);
-        eurUsdRate = ethUsdPrice.div(10**6);
+        eurUsdRate = eurUsdPrice.div(10**6);
     }
 
     function setEthUsdRateProvider(address provider) external onlyOwner {

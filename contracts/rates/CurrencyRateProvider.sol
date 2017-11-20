@@ -9,6 +9,7 @@ contract CurrencyRateProvider is Ownable, usingOraclize  {
     using SafeMath for uint;
 
     uint public currentRate;
+    uint public updateInterval;
 
     string public url;
 
@@ -42,10 +43,10 @@ contract CurrencyRateProvider is Ownable, usingOraclize  {
     }
 
 
-    function startListening(uint initialPrice) payable onlyOwner inStoppedState {
+    function startListening(uint initialRate) payable onlyOwner inStoppedState {
         state = State.Active;
-        currentPrice = initialPrice;
-        update(updateInterval);
+        currentRate = initialRate;
+        updateRate(updateInterval);
     }
 
     function stopListening() external onlyOwner inActiveState {
