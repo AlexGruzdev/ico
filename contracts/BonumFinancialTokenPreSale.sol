@@ -1,14 +1,14 @@
 pragma solidity ^0.4.17;
 
 
-import "./Haltable.sol";
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BonumFinancialToken.sol";
+import "./Burnable.sol";
 import "./Investors.sol";
+import "./rates/PriceReceiver.sol";
 
-
-contract BonumFinancialTokenPreSale is Haltable {
+contract BonumFinancialTokenPreSale is Haltable, PriceReceiver {
     using SafeMath for uint;
 
     string public constant name = "Bonum Financial Token PreSale";
@@ -19,6 +19,8 @@ contract BonumFinancialTokenPreSale is Haltable {
     Investors public investors;
     address[] public wallets;
     mapping (address => uint) tokenHolders;
+    uint ethUsdRate;
+    uint eurUsdRate;
 
     bool public crowdsaleFinished = false;
     event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
@@ -38,6 +40,25 @@ contract BonumFinancialTokenPreSale is Haltable {
         wallets = _wallets;
     }
 
+    function receiveEthPrice(uint ethUsdPrice) external onlyEthUsdRateProvider {
+        require(ethUsdPrice > 0);
+        ethUsdRate = ethUsdPrice;
+    }
+
+    function receiveEurPrice(uint eurUsdPrice) external onlyEurUsdRateProvider{
+        require(eurUsdPrice > 0);
+        eurUsdRate = ethUsdPrice.div(10**6);
+    }
+
+    function setEthUsdRateProvider(address provider) external onlyOwner {
+        require(provider != 0x0);
+        ethUsdRateProvider = provider;
+    }
+
+    function setEurUsdRateProvider(address provider) external onlyOwner {
+        require(provider != 0x0);
+        eurUsdRateProvider = provider;
+    }
 
 
     modifier activePreSale(){
@@ -56,5 +77,6 @@ contract BonumFinancialTokenPreSale is Haltable {
     }
 
     function() payable {
+
     }
 }

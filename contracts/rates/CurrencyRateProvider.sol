@@ -24,6 +24,10 @@ contract CurrencyRateProvider is Ownable, usingOraclize  {
     enum State { Stopped, Active }
     State public state = State.Stopped;
 
+    function CurrencyRateProvider(string _url) {
+        url = _url;
+        updateRate(0);
+    }
 
     function notifyWatcher() internal;
 
@@ -37,10 +41,6 @@ contract CurrencyRateProvider is Ownable, usingOraclize  {
         _;
     }
 
-    function PriceProvider(string _url) {
-        url = _url;
-        updateRate(0);
-    }
 
     function startListening(uint initialPrice) payable onlyOwner inStoppedState {
         state = State.Active;
@@ -71,7 +71,7 @@ contract CurrencyRateProvider is Ownable, usingOraclize  {
         require(msg.sender == oraclize_cbAddress() && validIds[myid]);
         delete validIds[myid];
 
-        uint newRate = parseInt(result, 3);
+        uint newRate = parseInt(result, 6);
         require(newRate > 0);
         currentRate = newRate;
         RateUpdated(result);
