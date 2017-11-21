@@ -63,21 +63,19 @@ contract InvestorsList is Ownable {
         investorsList[id].whiteListStatus = status;
     }
 
-    function getInvestorFields(bytes32 id)  external onlyOwner constant returns (
-        bytes32,
-        bool,
-        uint,
-        address,
-        WhiteListStatus,
-        VerificationStatus
+    function getInvestorFields(bytes32 investorId) external onlyOwner constant returns (
+        bytes32 id,
+        bool exists,
+        uint tokensCount,
+        address walletForTokens,
+        WhiteListStatus whiteListStatus,
+        VerificationStatus verificationStatus
     ){
-        return (
-            investorsList[id].id,
-            investorsList[id].exists,
-            investorsList[id].tokensCount,
-            investorsList[id].walletForTokens,
-            investorsList[id].whiteListStatus,
-            investorsList[id].verificationStatus
-        );
+        id = investorsList[investorId].id;
+        exists = investorsList[investorId].exists;
+        tokensCount = investorsList[investorId].tokensCount;
+        walletForTokens = investorsList[investorId].walletForTokens;
+        whiteListStatus = investorsList[investorId].whiteListStatus;
+        verificationStatus = investorsList[investorId].verificationStatus;
     }
 }
