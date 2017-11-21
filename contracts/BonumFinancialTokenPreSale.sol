@@ -5,7 +5,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BonumFinancialToken.sol";
 import "./Haltable.sol";
-import "./Investors.sol";
+import "./InvestorsList.sol";
 
 contract BonumFinancialTokenPreSale is Haltable{
     using SafeMath for uint;
@@ -15,7 +15,7 @@ contract BonumFinancialTokenPreSale is Haltable{
     uint start;
     uint duration;
     BonumFinancialToken public token;
-    Investors public investors;
+    InvestorsList public investors;
     address[] public wallets;
     mapping (address => uint) tokenHolders;
     uint ethUsdRate;
@@ -32,19 +32,19 @@ contract BonumFinancialTokenPreSale is Haltable{
     address[] _wallets,
     uint _baseEthUsdRate,
     uint _baseEurUsdRate
-    ){
+    ) public {
         start = _start;
         duration = _duration;
 
         token = BonumFinancialToken(_token);
-        investors = Investors(_investors);
+        investors = InvestorsList(_investors);
         wallets = _wallets;
 
         ethUsdRate = _baseEthUsdRate;
         eurUsdRate = _baseEurUsdRate;
     }
 
-    function receiveEthRate(uint rate) onlyOwner {
+   /* function receiveEthRate(uint rate) onlyOwner {
         require(rate > 0);
         ethUsdRate = rate;
     }
@@ -71,5 +71,5 @@ contract BonumFinancialTokenPreSale is Haltable{
 
     function() payable {
 
-    }
+    }*/
 }
