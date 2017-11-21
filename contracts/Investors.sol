@@ -5,7 +5,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
 contract Investors is Ownable {
-
     struct Investor {
         bool isVerified;
         bool isInWhiteList;

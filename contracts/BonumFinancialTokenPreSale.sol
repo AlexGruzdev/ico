@@ -6,9 +6,8 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BonumFinancialToken.sol";
 import "./Haltable.sol";
 import "./Investors.sol";
-import "./rates/PriceReceiver.sol";
 
-contract BonumFinancialTokenPreSale is Haltable, PriceReceiver {
+contract BonumFinancialTokenPreSale is Haltable{
     using SafeMath for uint;
 
     string public constant name = "Bonum Financial Token PreSale";
@@ -30,7 +29,9 @@ contract BonumFinancialTokenPreSale is Haltable, PriceReceiver {
     uint _duration,
     address _token,
     address _investors,
-    address[] _wallets
+    address[] _wallets,
+    uint _baseEthUsdRate,
+    uint _baseEurUsdRate
     ){
         start = _start;
         duration = _duration;
@@ -38,28 +39,20 @@ contract BonumFinancialTokenPreSale is Haltable, PriceReceiver {
         token = BonumFinancialToken(_token);
         investors = Investors(_investors);
         wallets = _wallets;
+
+        ethUsdRate = _baseEthUsdRate;
+        eurUsdRate = _baseEurUsdRate;
     }
 
-    function receiveEthPrice(uint ethUsdPrice) external onlyEthUsdRateProvider {
-        require(ethUsdPrice > 0);
-        ethUsdRate = ethUsdPrice;
+    function receiveEthRate(uint rate) onlyOwner {
+        require(rate > 0);
+        ethUsdRate = rate;
     }
 
-    function receiveEurPrice(uint eurUsdPrice) external onlyEurUsdRateProvider{
-        require(eurUsdPrice > 0);
-        eurUsdRate = eurUsdPrice.div(10**6);
+    function receiveEurRate(uint rate) onlyOwner{
+        require(rate > 0);
+        eurUsdRate = rate;
     }
-
-    function setEthUsdRateProvider(address provider) external onlyOwner {
-        require(provider != 0x0);
-        ethUsdRateProvider = provider;
-    }
-
-    function setEurUsdRateProvider(address provider) external onlyOwner {
-        require(provider != 0x0);
-        eurUsdRateProvider = provider;
-    }
-
 
     modifier activePreSale(){
         require(now >= start && now <= start + duration * 1 days);
