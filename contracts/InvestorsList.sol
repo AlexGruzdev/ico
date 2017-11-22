@@ -61,6 +61,12 @@ contract InvestorsList is Ownable {
         return investorsList[id].verificationStatus != VerificationStatus.NotVerified;
     }
 
+
+    function isFullVerified(bytes32 id){
+        require(id.length > 0 && investorsList[id].exists);
+        return investorsList[id].verificationStatus == VerificationStatus.Full;
+    }
+
     function isFullVerified(address investor){
         require(investorAddress != 0x0);
         bytes32 id = getInvestorId(investor);
@@ -97,6 +103,18 @@ contract InvestorsList is Ownable {
         bytes32 id = getInvestorId(investor);
         require(id.length > 0 && investorsList[id].exists);
         investorsList[id].tokensCount.add(tokens);
+    }
+
+    function addTokens(bytes32 id, uint tokens){
+        require(id.length > 0 && investorsList[id].exists);
+        investorsList[id].tokensCount.add(tokens);
+    }
+
+    function subTokens(address investor, uint tokens){
+        require(investorAddress != 0x0);
+        bytes32 id = getInvestorId(investor);
+        require(id.length > 0 && investorsList[id].exists);
+        investorsList[id].tokensCount.sub(tokens);
     }
 
     function subTokens(address investor, uint tokens){

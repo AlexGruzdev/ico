@@ -57,6 +57,12 @@ contract BonumFinancialTokenPreSale is Haltable{
         ethEurRate = rate;
     }
 
+    function setNewInvestorsList(address investorsList) onlyOwner {
+        require(investorsList != 0x0);
+        investors = InvestorsList(investorsList);
+    }
+
+
     modifier activePreSale(){
         require(now >= start && now <= start + duration * 1 days);
         _;
@@ -87,7 +93,7 @@ contract BonumFinancialTokenPreSale is Haltable{
 
     function calculateBonus(address sender, uint tokensCount) private constant returns(uint){
         if(now < start + whiteListPreSaleDuration){
-            if(investors.isFullVerified(sender)){
+            if(investors.isPreWhiteList(sender)){
                 return value.div(100).mul(35);
             }
             return value.div(100).mul(25);
@@ -103,17 +109,36 @@ contract BonumFinancialTokenPreSale is Haltable{
         }
 
 
+        return 0;
+    }
+
+    function calculateBonusForExternalCurrencies(bytes32 id, uint tokensCount) private constant returns(uint){
+        return 0;
     }
 
     function purchase() private payable activePreSale isAllowedToBuy minimumAmount{
-        if(calculateAmountInEuro(msg.value) > 10000 && !investors.isFullVerified(msg.sender)){
+        if(calculateAmountInEuro(msg.value) >= 10000 && !investors.isFullVerified(msg.sender)){
             revert();
         }
 
         uint tokens = msg.value.mul(ethUsdRate).mul(10**6 * 1 ether);
-        tokens += calculateBonus(msg.sender, tokens);
+        tokens.add(calculateBonus(msg.sender, tokens));
         NewContribution(msg.sender, tokens, msg.value);
 
         investors.addTokens(msg.sender, tokens);
+    }
+
+                                            //usd * 10^6
+    function otherCoinsPurchase(bytes32 id, uint amountInUsd, bool isMoreThan10kEur) activePreSale onlyOwner{
+        require(id.length > 0 && amountInUsd >= 1);
+        if(isMoreThan10kEur && !investors.isFullVerified(id)){
+            revert();
+        }
+
+        uint tokens = amountInUsd.mul(1 ether).div(10**6);
+        tokens.add(calculateBonus(msg.sender, tokens));
+        NewContribution(msg.sender, tokens, msg.value);
+
+        investors.addTokens(id, tokens);
     }
 }
