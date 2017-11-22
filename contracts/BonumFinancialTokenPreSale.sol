@@ -24,6 +24,10 @@ contract BonumFinancialTokenPreSale is Haltable{
     uint ethEurRate;
     uint public collected = 0;
     uint public tokensSold = 0;
+    //23x13
+    uint[][] bonusTable;
+    mapping (uint => uint) bonusRows;
+
 
     bool public crowdsaleFinished = false;
     event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
@@ -36,6 +40,7 @@ contract BonumFinancialTokenPreSale is Haltable{
     address[] _wallets,
     uint _baseEthUsdRate,
     uint _baseEthEurRate
+    //uint[][] _bonusTable
     ) public {
         start = _start;
         duration = _duration;
@@ -46,6 +51,7 @@ contract BonumFinancialTokenPreSale is Haltable{
 
         ethUsdRate = _baseEthUsdRate;
         ethEurRate = _baseEthEurRate;
+        //bonusTable = _bonusTable;
     }
 
     function receiveEthUsdRate(uint rate) external onlyOwner {
@@ -84,9 +90,9 @@ contract BonumFinancialTokenPreSale is Haltable{
         _;
     }
 
-    function() payable public activePreSale isAllowedToBuy minimumAmount{
+    function() payable public activePreSale isAllowedToBuy minimumAmount {
         bytes32 id = investors.getInvestorId(msg.sender);
-        if(calculateAmountInEuro(msg.value) >= 10000 && !investors.isFullVerified(id)){
+        if (calculateAmountInEuro(msg.value) >= 10000 && !investors.isFullVerified(id)) {
             revert();
         }
 
@@ -95,12 +101,14 @@ contract BonumFinancialTokenPreSale is Haltable{
         NewContribution(msg.sender, tokens, msg.value);
 
         investors.addTokens(id, tokens);
+        collected.add(msg.value);
+        tokensSold.add(tokens);
     }
 
     //usd * 10^6
-    function otherCoinsPurchase(bytes32 id, uint amountInUsd, bool isMoreThan10kEur) external activePreSale onlyOwner{
+    function otherCoinsPurchase(bytes32 id, uint amountInUsd, bool isMoreThan10kEur) external activePreSale onlyOwner {
         require(id.length > 0 && amountInUsd >= 1 && investors.isAllowedToBuy(id));
-        if(isMoreThan10kEur && !investors.isFullVerified(id)){
+        if (isMoreThan10kEur && !investors.isFullVerified(id)) {
             revert();
         }
 
@@ -109,28 +117,41 @@ contract BonumFinancialTokenPreSale is Haltable{
         NewContribution(msg.sender, tokens, 0);
 
         investors.addTokens(id, tokens);
+        tokensSold.add(tokens);
     }
 
-    function calculateAmountInEuro(uint value) private constant returns(uint){
+    function calculateAmountInEuro(uint value) private constant returns (uint){
         return value.mul(ethEurRate).div(bftUsdRate * 1 ether);
     }
 
-    function calculateBonus(bytes32 id, uint tokensCount) private constant returns(uint){
-        if(now < start + whiteListPreSaleDuration){
-            if(investors.isPreWhiteList(id)){
+    function calculateBonus(bytes32 id, uint tokensCount) private constant returns (uint){
+        if (now < start + whiteListPreSaleDuration) {
+            if (investors.isPreWhiteList(id)) {
                 return tokensCount.div(100).mul(35);
             }
             return tokensCount.div(100).mul(25);
         }
 
+        uint column = ((now - start)/86400) - 1;
+        if(table < 0 ){
+            revert();
+        }
+
         //1 token == 1$
-        uint baseForBonus = 0;
-        if (tokensCount < 75) {
-            baseForBonus = 75;
+        if (tokensCount < 100) {
+            return bonusTable[0][column];
         }
-        if (tokensCount > 5000) {
-            baseForBonus = 5000;
+        if (tokensCount > 50000) {
+            return bonusTable[22][column];
         }
+
+        uint bottomLine = (tokensCount / 100) * 100;
+        if(bottomLine == tokensCount){
+            return bonusTable[bonusRows[bottomLine]][column];
+        }
+
+        uint topLine = bonusTable[bonusRows[bottomLine] + 1][column];
+        //formula
 
 
         return 0;
