@@ -18,7 +18,7 @@ contract("Investors", accounts => {
         }
 
         it("Owner can add investor, make him whitelisted and verified completely", async () => {
-            await investorsList.addInvestor("testId", 1, 1);
+            await investorsList.addInvestor("testId", 1, 2);
             const result = await investorsList.getInvestorFields("testId");
 
             assertInvestorData(result);
@@ -27,7 +27,7 @@ contract("Investors", accounts => {
         });
 
         it("Owner can add investor, make him usual", async () => {
-            await investorsList.addInvestor("testId", 0, 0);
+            await investorsList.addInvestor("testId", 0, 1);
             const result = await investorsList.getInvestorFields("testId");
             assertInvestorData(result);
             assert.equal("0", result[4].toString());
@@ -36,7 +36,7 @@ contract("Investors", accounts => {
 
 
         it("Owner can add investor, make him prewhitelisted usual and verified completely", async () => {
-            await investorsList.addInvestor("testId", 2, 1);
+            await investorsList.addInvestor("testId", 2, 2);
             const result = await investorsList.getInvestorFields("testId");
             assertInvestorData(result);
             assert.equal("2", result[4].toString());

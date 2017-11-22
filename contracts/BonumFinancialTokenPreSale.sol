@@ -14,12 +14,15 @@ contract BonumFinancialTokenPreSale is Haltable{
 
     uint start;
     uint duration;
+    uint whiteListPreSaleDuration = 1 days;
     BonumFinancialToken public token;
     InvestorsList public investors;
     address[] public wallets;
     mapping (address => uint) tokenHolders;
     uint ethUsdRate;
-    uint eurUsdRate;
+    uint ethEurRate;
+    uint public collected = 0;
+    uint public tokensSold = 0;
 
     bool public crowdsaleFinished = false;
     event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
@@ -31,7 +34,7 @@ contract BonumFinancialTokenPreSale is Haltable{
     address _investors,
     address[] _wallets,
     uint _baseEthUsdRate,
-    uint _baseEurUsdRate
+    uint _baseEthEurRate
     ) public {
         start = _start;
         duration = _duration;
@@ -41,17 +44,17 @@ contract BonumFinancialTokenPreSale is Haltable{
         wallets = _wallets;
 
         ethUsdRate = _baseEthUsdRate;
-        eurUsdRate = _baseEurUsdRate;
+        ethEurRate = _baseEthEurRate;
     }
 
-   /* function receiveEthRate(uint rate) onlyOwner {
+    function receiveEthUsdRate(uint rate) onlyOwner {
         require(rate > 0);
         ethUsdRate = rate;
     }
 
-    function receiveEurRate(uint rate) onlyOwner{
+    function receiveEthEurRate(uint rate) onlyOwner {
         require(rate > 0);
-        eurUsdRate = rate;
+        ethEurRate = rate;
     }
 
     modifier activePreSale(){
@@ -64,12 +67,44 @@ contract BonumFinancialTokenPreSale is Haltable{
         _;
     }
 
-    modifier verifiedInvestor(){
-        require(investors.getIsVerified(msg.sender));
+    modifier isAllowedToBuy(){
+        require(investors.isAllowedToBuy(msg.sender));
         _;
     }
 
     function() payable {
+        purchase();
+    }
 
-    }*/
+    function calculateAmountInEuro(uint value) private constant returns(uint){
+        return value.mul(ethEurRate).div(10**6 * 1 ether);
+    }
+
+    function calculateBonus(address sender, uint tokensCount) private constant returns(uint){
+        if(now < start + whiteListPreSaleDuration){
+            if(investors.isFullVerified(sender)){
+                return value.div(100).mul(35);
+            }
+            return value.div(100).mul(25);
+        }
+
+        //1 token == 1$
+        uint baseForBonus = 0;
+        if (tokensCount < 75) {
+            baseForBonus = 75;
+        }
+        if (tokensCount > 5000) {
+            baseForBonus = 5000;
+        }
+
+
+    }
+
+    function purchase() private payable activePreSale isAllowedToBuy{
+        if(calculateAmountInEuro(msg.value) > 10000 && !investors.isFullVerified(msg.sender)){
+            revert();
+        }
+
+        uint tokens = msg.value.mul(ethUsdRate).div(10**6);
+    }
 }
