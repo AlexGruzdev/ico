@@ -15,6 +15,7 @@ contract BonumFinancialTokenPreSale is Haltable{
     uint start;
     uint duration;
     uint whiteListPreSaleDuration = 1 days;
+    uint bftUsdRate = 10**6;
     BonumFinancialToken public token;
     InvestorsList public investors;
     address[] public wallets;
@@ -47,17 +48,17 @@ contract BonumFinancialTokenPreSale is Haltable{
         ethEurRate = _baseEthEurRate;
     }
 
-    function receiveEthUsdRate(uint rate) onlyOwner {
+    function receiveEthUsdRate(uint rate) external onlyOwner {
         require(rate > 0);
         ethUsdRate = rate;
     }
 
-    function receiveEthEurRate(uint rate) onlyOwner {
+    function receiveEthEurRate(uint rate) external onlyOwner {
         require(rate > 0);
         ethEurRate = rate;
     }
 
-    function setNewInvestorsList(address investorsList) onlyOwner {
+    function setNewInvestorsList(address investorsList) external onlyOwner {
         require(investorsList != 0x0);
         investors = InvestorsList(investorsList);
     }
@@ -79,24 +80,47 @@ contract BonumFinancialTokenPreSale is Haltable{
     }
 
     modifier minimumAmount(){
-        require(msg.value.mul(ethUsdRate).mul(10**6 * 1 ether) > 1);
+        require(msg.value.mul(ethUsdRate).mul(bftUsdRate * 1 ether) > 1);
         _;
     }
 
-    function() payable {
-        purchase();
+    function() payable public activePreSale isAllowedToBuy minimumAmount{
+        bytes32 id = investors.getInvestorId(msg.sender);
+        if(calculateAmountInEuro(msg.value) >= 10000 && !investors.isFullVerified(id)){
+            revert();
+        }
+
+        uint tokens = msg.value.mul(ethUsdRate).mul(bftUsdRate * 1 ether);
+        tokens.add(calculateBonus(id, tokens));
+        NewContribution(msg.sender, tokens, msg.value);
+
+        investors.addTokens(id, tokens);
+    }
+
+    //usd * 10^6
+    function otherCoinsPurchase(bytes32 id, uint amountInUsd, bool isMoreThan10kEur) external activePreSale onlyOwner{
+        require(id.length > 0 && amountInUsd >= 1 && investors.isAllowedToBuy(id));
+        if(isMoreThan10kEur && !investors.isFullVerified(id)){
+            revert();
+        }
+
+        uint tokens = amountInUsd.mul(1 ether).div(bftUsdRate);
+        tokens.add(calculateBonus(id, tokens));
+        NewContribution(msg.sender, tokens, 0);
+
+        investors.addTokens(id, tokens);
     }
 
     function calculateAmountInEuro(uint value) private constant returns(uint){
-        return value.mul(ethEurRate).div(10**6 * 1 ether);
+        return value.mul(ethEurRate).div(bftUsdRate * 1 ether);
     }
 
-    function calculateBonus(address sender, uint tokensCount) private constant returns(uint){
+    function calculateBonus(bytes32 id, uint tokensCount) private constant returns(uint){
         if(now < start + whiteListPreSaleDuration){
-            if(investors.isPreWhiteList(sender)){
-                return value.div(100).mul(35);
+            if(investors.isPreWhiteList(id)){
+                return tokensCount.div(100).mul(35);
             }
-            return value.div(100).mul(25);
+            return tokensCount.div(100).mul(25);
         }
 
         //1 token == 1$
@@ -110,35 +134,5 @@ contract BonumFinancialTokenPreSale is Haltable{
 
 
         return 0;
-    }
-
-    function calculateBonusForExternalCurrencies(bytes32 id, uint tokensCount) private constant returns(uint){
-        return 0;
-    }
-
-    function purchase() private payable activePreSale isAllowedToBuy minimumAmount{
-        if(calculateAmountInEuro(msg.value) >= 10000 && !investors.isFullVerified(msg.sender)){
-            revert();
-        }
-
-        uint tokens = msg.value.mul(ethUsdRate).mul(10**6 * 1 ether);
-        tokens.add(calculateBonus(msg.sender, tokens));
-        NewContribution(msg.sender, tokens, msg.value);
-
-        investors.addTokens(msg.sender, tokens);
-    }
-
-                                            //usd * 10^6
-    function otherCoinsPurchase(bytes32 id, uint amountInUsd, bool isMoreThan10kEur) activePreSale onlyOwner{
-        require(id.length > 0 && amountInUsd >= 1);
-        if(isMoreThan10kEur && !investors.isFullVerified(id)){
-            revert();
-        }
-
-        uint tokens = amountInUsd.mul(1 ether).div(10**6);
-        tokens.add(calculateBonus(msg.sender, tokens));
-        NewContribution(msg.sender, tokens, msg.value);
-
-        investors.addTokens(id, tokens);
     }
 }

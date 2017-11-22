@@ -2,6 +2,7 @@ pragma solidity ^0.4.17;
 
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
 
 contract InvestorsList is Ownable {
@@ -10,8 +11,8 @@ contract InvestorsList is Ownable {
     mapping (address => bytes32) public nativeInvestorsIds;
     mapping (bytes32 => Investor) public investorsList;
 
-    function getInvestorId(address investorAddress) constant external returns (bytes32){
-        require(investorAddress != 0x0);
+    function getInvestorId(address investorAddress) constant public returns (bytes32){
+        require(investorAddress != 0x0 && nativeInvestorsIds[investorAddress].length > 0);
         return nativeInvestorsIds[investorAddress];
     }
 
@@ -55,37 +56,31 @@ contract InvestorsList is Ownable {
     }
 
     function isAllowedToBuy(address investor) external onlyOwner constant returns(bool){
-        require(investorAddress != 0x0);
+        require(investor != 0x0);
         bytes32 id = getInvestorId(investor);
         require(id.length > 0 && investorsList[id].exists);
         return investorsList[id].verificationStatus != VerificationStatus.NotVerified;
     }
 
+    function isAllowedToBuy(bytes32 id) external onlyOwner constant returns(bool){
+        require(id.length > 0 && investorsList[id].exists);
+        return investorsList[id].verificationStatus != VerificationStatus.NotVerified;
+    }
 
-    function isFullVerified(bytes32 id){
+
+    function isFullVerified(bytes32 id) external onlyOwner constant returns(bool){
         require(id.length > 0 && investorsList[id].exists);
         return investorsList[id].verificationStatus == VerificationStatus.Full;
     }
 
-    function isFullVerified(address investor){
-        require(investorAddress != 0x0);
-        bytes32 id = getInvestorId(investor);
+    function isPreWhiteList(bytes32 id) external onlyOwner constant returns(bool){
         require(id.length > 0 && investorsList[id].exists);
-        return investorsList[id].verificationStatus == VerificationStatus.Full;
+        return investorsList[id].whiteListStatus == WhiteListStatus.PreWhiteList;
     }
 
-    function isPreWhiteList(address investor){
-        require(investorAddress != 0x0);
-        bytes32 id = getInvestorId(investor);
+    function isWhiteList(bytes32 id) external onlyOwner constant returns(bool){
         require(id.length > 0 && investorsList[id].exists);
-        return investorsList[id].status == WhiteListStatus.PreWhiteList;
-    }
-
-    function isWhiteList(address investor){
-        require(investorAddress != 0x0);
-        bytes32 id = getInvestorId(investor);
-        require(id.length > 0 && investorsList[id].exists);
-        return investorsList[id].status == WhiteListStatus.WhiteList;
+        return investorsList[id].whiteListStatus == WhiteListStatus.WhiteList;
     }
 
     function setVerificationStatus(bytes32 id, VerificationStatus status) external onlyOwner{
@@ -98,35 +93,17 @@ contract InvestorsList is Ownable {
         investorsList[id].whiteListStatus = status;
     }
 
-    function addTokens(address investor, uint tokens){
-        require(investorAddress != 0x0);
-        bytes32 id = getInvestorId(investor);
+    function addTokens(bytes32 id, uint tokens) external onlyOwner{
         require(id.length > 0 && investorsList[id].exists);
         investorsList[id].tokensCount.add(tokens);
     }
 
-    function addTokens(bytes32 id, uint tokens){
-        require(id.length > 0 && investorsList[id].exists);
-        investorsList[id].tokensCount.add(tokens);
-    }
-
-    function subTokens(address investor, uint tokens){
-        require(investorAddress != 0x0);
-        bytes32 id = getInvestorId(investor);
+    function subTokens(bytes32 id, uint tokens) external onlyOwner{
         require(id.length > 0 && investorsList[id].exists);
         investorsList[id].tokensCount.sub(tokens);
     }
 
-    function subTokens(address investor, uint tokens){
-        require(investorAddress != 0x0);
-        bytes32 id = getInvestorId(investor);
-        require(id.length > 0 && investorsList[id].exists);
-        investorsList[id].tokensCount.sub(tokens);
-    }
-
-    function setWalletForTokens(address investor, address wallet){
-        require(investorAddress != 0x0);
-        bytes32 id = getInvestorId(investor);
+    function setWalletForTokens(bytes32 id, address wallet) external onlyOwner{
         require(id.length > 0 && investorsList[id].exists);
         investorsList[id].walletForTokens = wallet;
     }
