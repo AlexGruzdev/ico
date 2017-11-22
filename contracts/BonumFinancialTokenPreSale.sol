@@ -72,6 +72,11 @@ contract BonumFinancialTokenPreSale is Haltable{
         _;
     }
 
+    modifier minimumAmount(){
+        require(msg.value.mul(ethUsdRate).mul(10**6 * 1 ether) > 1);
+        _;
+    }
+
     function() payable {
         purchase();
     }
@@ -100,11 +105,15 @@ contract BonumFinancialTokenPreSale is Haltable{
 
     }
 
-    function purchase() private payable activePreSale isAllowedToBuy{
+    function purchase() private payable activePreSale isAllowedToBuy minimumAmount{
         if(calculateAmountInEuro(msg.value) > 10000 && !investors.isFullVerified(msg.sender)){
             revert();
         }
 
-        uint tokens = msg.value.mul(ethUsdRate).div(10**6);
+        uint tokens = msg.value.mul(ethUsdRate).mul(10**6 * 1 ether);
+        tokens += calculateBonus(msg.sender, tokens);
+        NewContribution(msg.sender, tokens, msg.value);
+
+        investors.addTokens(msg.sender, tokens);
     }
 }
