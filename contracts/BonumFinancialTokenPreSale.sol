@@ -134,7 +134,7 @@ contract BonumFinancialTokenPreSale is Haltable{
         }
 
         uint column = ((now - start)/86400) - 1;
-        if(table < 0 ){
+        if(column < 0 ){
             revert();
         }
 
@@ -146,19 +146,20 @@ contract BonumFinancialTokenPreSale is Haltable{
             return bonusTable[22][column];
         }
 
-        int bottomLine = (tokensCount / 100) * 100;
+        uint bottomLine = (tokensCount / 100) * 100;
         if(bottomLine == tokensCount){
             return bonusTable[bonusRows[bottomLine]][column];
         }
 
-        int topLine = bonusTable[bonusRows[bottomLine] + 1][0];
+        uint topLine = bonusTable[bonusRows[bottomLine] + 1][0];
 
         uint b1 = bonusTable[bonusRows[bottomLine]][column];
         uint b2 = bonusTable[bonusRows[topLine]][column];
-        int bonus = ((tokens - bottomLine) * (topLine - bottomLine)) / ((bottomLine  - topLine) + b1);
-        bonus = bonus / bftUsdRate;
 
+        int firstPart = int(tokensCount - bottomLine) * int(topLine - bottomLine);
+        int secondPart = int(bottomLine  - topLine) + int(b1);
+        int bonus = firstPart / secondPart;
 
-        return bonus;
+        return uint(bonus) / bftUsdRate;
     }
 }
