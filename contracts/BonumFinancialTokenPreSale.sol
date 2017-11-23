@@ -86,7 +86,7 @@ contract BonumFinancialTokenPreSale is Haltable{
 
 
     modifier isAllowedToBuy(){
-        require(investors.isAllowedToBuy(msg.sender));
+        require(investors.isAllowedToBuyByAddress(msg.sender));
         _;
     }
 
