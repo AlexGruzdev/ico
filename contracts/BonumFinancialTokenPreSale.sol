@@ -18,12 +18,14 @@ contract BonumFinancialTokenPreSale is Haltable{
     uint bftUsdRate = 10**6;
     BonumFinancialToken public token;
     InvestorsList public investors;
-    address[] public wallets;
+    uint walletIndex = 0;
+    address[] wallets;
     mapping (address => uint) tokenHolders;
     uint ethUsdRate;
     uint ethEurRate;
     uint public collected = 0;
     uint public tokensSold = 0;
+    uint public tokensSoldWithBonus = 0;
     //23x13
     uint[][] bonusTable;
     //row numbers
@@ -76,10 +78,12 @@ contract BonumFinancialTokenPreSale is Haltable{
         _;
     }
 
-    modifier endedPreSale(){
-        require(now > start + duration * 1 days);
+    modifier underCap(){
+        require(tokensSold < 750000 * 1 ether);
         _;
     }
+
+
 
     modifier isAllowedToBuy(){
         require(investors.isAllowedToBuy(msg.sender));
@@ -91,34 +95,51 @@ contract BonumFinancialTokenPreSale is Haltable{
         _;
     }
 
-    function() payable public activePreSale isAllowedToBuy minimumAmount {
+    function getCurrentWallet() private constant returns (address){
+        require(wallets.length > 0);
+        if(wallets[walletIndex].balance < 50000){
+            return wallets[walletIndex];
+        }
+
+        if(wallets.length >= walletIndex + 1){
+            walletIndex++;
+        }
+
+        return wallets[walletIndex];
+    }
+
+    function() payable public  inNormalState activePreSale underCap isAllowedToBuy minimumAmount {
         bytes32 id = investors.getInvestorId(msg.sender);
         if (calculateAmountInEuro(msg.value) >= 10000 && !investors.isFullVerified(id)) {
             revert();
         }
 
         uint tokens = msg.value.mul(ethUsdRate).mul(bftUsdRate * 1 ether);
-        tokens.add(calculateBonus(id, tokens));
+        tokensSold.add(tokens);
+        tokens = tokens.add(calculateBonus(id, tokens));
+        tokensSoldWithBonus.add(tokens);
         NewContribution(msg.sender, tokens, msg.value);
+
+        getCurrentWallet().transfer(msg.value);
+
 
         investors.addTokens(id, tokens);
         collected.add(msg.value);
-        tokensSold.add(tokens);
     }
 
     //usd * 10^6
-    function otherCoinsPurchase(bytes32 id, uint amountInUsd, bool isMoreThan10kEur) external activePreSale onlyOwner {
+    function otherCoinsPurchase(bytes32 id, uint amountInUsd, bool isMoreThan10kEur) external inNormalState underCap activePreSale onlyOwner {
         require(id.length > 0 && amountInUsd >= 1 && investors.isAllowedToBuy(id));
         if (isMoreThan10kEur && !investors.isFullVerified(id)) {
             revert();
         }
 
         uint tokens = amountInUsd.mul(1 ether).div(bftUsdRate);
-        tokens.add(calculateBonus(id, tokens));
+        tokens = tokens.add(calculateBonus(id, tokens));
+        tokensSoldWithBonus.add(tokens);
         NewContribution(msg.sender, tokens, 0);
 
         investors.addTokens(id, tokens);
-        tokensSold.add(tokens);
     }
 
     function calculateAmountInEuro(uint value) private constant returns (uint){
